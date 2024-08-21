@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MIT
-
-pragma solidity ^0.8.10;
+pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -16,26 +15,10 @@ contract SimpleNFT is ERC721URIStorage, Ownable {
 
     // Mapping from token ID to metadata
     mapping(uint256 => Metadata) private tokenIdToMetadata;
-    string internal baseURI = "https://gateway.pinata.cloud/ipfs/";
-    // events
-    event BaseURIChanged(string newURI);
+
     constructor() ERC721("SimpleNFT", "SNFT") {
         tokenCounter = 0;
     }
-
-    /// @notice	Sets the Base URI for ALL tokens
-	/// @dev	Can be overriden by the specific token URI
-	/// @param	newURI	URI to be used
-    function setBaseURI(string calldata newURI) public {
-		baseURI = newURI;
-		emit BaseURIChanged(newURI);
-	}
-
-    /// @notice	Overridden function from the ERC721 contract that returns our
-	///	variable base URI instead of the hardcoded URI
-	function _baseURI() internal view override(ERC721) returns (string memory) {
-		return baseURI;
-	}
 
     function createNFT(string memory name, string memory description, string memory imageURL) public returns (uint256) {
         uint256 newTokenId = tokenCounter;
@@ -44,11 +27,8 @@ contract SimpleNFT is ERC721URIStorage, Ownable {
         // Store metadata
         tokenIdToMetadata[newTokenId] = Metadata(name, description, imageURL);
 
-        string memory __baseURI;
-        __baseURI = _baseURI();
-
-        string memory tokenURI = string(abi.encodePacked(__baseURI, imageURL));
-        _setTokenURI(newTokenId, tokenURI);
+        // Set token URI to be just the IPFS hash or a simple identifier, not the full URL
+        _setTokenURI(newTokenId, imageURL);  // Store only the hash or imageURL identifier
 
         tokenCounter += 1;
         return newTokenId;
